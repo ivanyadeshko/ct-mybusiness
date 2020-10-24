@@ -7,6 +7,8 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
 use common\models\User;
+use yii\data\ActiveDataProvider;
+use common\models\Apple;
 
 /**
  * Site controller
@@ -66,7 +68,23 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+
+        $activeDataProvider = new ActiveDataProvider([
+            'query' => Apple::find(),
+            'pagination' => [
+                'pageSize' => 25,
+            ],
+            'sort' => [
+                'defaultOrder' => [
+                    'created_at' => SORT_ASC
+                ]
+            ],
+        ]);
+
+
+        return $this->render('index', [
+            'activeDataProvider' => $activeDataProvider,
+        ]);
     }
 
     /**

@@ -137,3 +137,9 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+a.btn-secondary.disabled {
+    color: inherit;
+    background-color:#efefef;
+    border-color: #e8e8e8
+}

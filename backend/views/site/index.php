@@ -1,53 +1,101 @@
 <?php
 
-/* @var $this yii\web\View */
+use \common\models\Apple;
+use \yii\helpers\Html;
+use \yii\web\View;
+
+/* @var $this View */
+/* @var $activeDataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'My Yii Application';
 ?>
 <div class="site-index">
 
-    <div class="jumbotron">
-        <h1>Congratulations!</h1>
-
-        <p class="lead">You have successfully created your Yii-powered application.</p>
-
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
-
     <div class="body-content">
 
         <div class="row">
             <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
+                <?= Html::beginForm(['/site/grow-apples'], 'POST'); ?>
+                <?= Html::submitButton('Grow Apples', ['class' => 'btn btn-success', 'style' => 'margin: 1em;']); ?>
+                <?= Html::endForm(); ?>
             </div>
         </div>
+
+
+
+        <?= \yii\grid\GridView::widget([
+            'dataProvider' => $activeDataProvider,
+            'columns' => [
+                'id',
+                [
+                    'attribute' => 'color',
+                    'format' => 'raw',
+                    'value' => function (Apple $model) {
+                        return "<div style='opacity: 70%; width: 20px; height: 20px; background-color: $model->color'></div>";
+
+                    },
+                ],
+                [
+                    'attribute' => 'fall_at',
+                    'value' => function (Apple $model) {
+                        if ($model->isOnTree()) {
+                            return 'On the tree';
+                        }
+                        return (new DateTime())->setTimestamp($model->fall_at)->format('Y-m-d H:i');
+                    },
+                ],
+                [
+                    'attribute' => 'size',
+                    'format' => 'raw',
+                    'value' => function(Apple $model) {
+                        return $model->size*100 .'%';
+                    }
+                ],
+                [
+                    'header' => 'State',
+                    'format' => 'raw',
+                    'value' => function(Apple $model) {
+                        return $model->isFresh() ? 'Fresh' : 'Addled';
+                    }
+                ],
+                [
+                    'header' => 'Eat',
+                    'content' => function(Apple $model) {
+                        /* @var $this View */
+                        return $this->render('parts/eat-apple-form', [
+                            'model' => $model
+                        ]);
+                    }
+                ],
+                [
+                    'header' => 'Fall To Ground',
+                    'content' => function(Apple $model) {
+                        return Html::a(
+                            'Throw off',
+                            \yii\helpers\Url::toRoute(['site/fall-to-ground-apple', 'id' => $model->id]),
+                            [
+                                'class' => "btn " . ($model->isOnTree() ? 'btn-success' : 'btn-secondary disabled'),
+                                'data' => [
+                                    'method' => 'post',
+                                    'params' => [
+                                        'id' => $model->id
+                                    ]
+                                ]
+                            ]
+                        );
+                    }
+                ],
+                [
+                    'attribute' => 'created_at',
+                    'value' => function (Apple $model) {
+                        return (new DateTime())->setTimestamp($model->created_at)->format('Y-m-d H:i');
+                    },
+                ],
+
+            ],
+
+        ]) ?>
+
 
     </div>
 </div>
