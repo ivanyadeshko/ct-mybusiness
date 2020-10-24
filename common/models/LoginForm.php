@@ -16,18 +16,20 @@ class LoginForm extends Model
     private $_user;
 
 
+    const SCENARIO_LOGIN_AS_USER = 'login_as_user';
+    const SCENARIO_LOGIN_AS_ADMIN = 'login_as_admin';
+
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            // username and password are both required
             [['username', 'password'], 'required'],
-            // rememberMe must be a boolean value
             ['rememberMe', 'boolean'],
-            // password is validated by validatePassword()
             ['password', 'validatePassword'],
+            [['username'], 'validateAdmin', 'on' => self::SCENARIO_LOGIN_AS_ADMIN]
         ];
     }
 
@@ -47,6 +49,18 @@ class LoginForm extends Model
             }
         }
     }
+
+
+    public function validateAdmin($attribute, $params)
+    {
+        if (!$this->hasErrors()) {
+            $user = $this->getUser();
+            if (!$user || !$user->isAdmin()) {
+                $this->addError($attribute, "User does't has admin role.");
+            }
+        }
+    }
+
 
     /**
      * Logs in a user using the provided username and password.

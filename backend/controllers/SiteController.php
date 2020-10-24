@@ -6,6 +6,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
+use common\models\User;
 
 /**
  * Site controller
@@ -19,7 +20,7 @@ class SiteController extends Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'actions' => ['login', 'error'],
@@ -29,6 +30,11 @@ class SiteController extends Controller
                         'actions' => ['logout', 'index'],
                         'allow' => true,
                         'roles' => ['@'],
+                        'matchCallback' => function($rule, InlineAction $action) {
+                            /** @var User $user */
+                            $user = Yii::$app->user->identity;
+                            return $action->id === 'logout' || ($user && $user->isAdmin());
+                        },
                     ],
                 ],
             ],
