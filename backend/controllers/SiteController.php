@@ -4,6 +4,7 @@ namespace backend\controllers;
 
 use backend\models\EatAppleForm;
 use Yii;
+use yii\base\Exception;
 use yii\base\InlineAction;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Html;
@@ -36,7 +37,7 @@ class SiteController extends Controller
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['logout', 'index', 'grow-apples', 'fall-to-ground-apple', 'eat-apple'],
+                        'actions' => ['logout', 'index', 'grow-apples', 'fall-to-ground-apple', 'eat-apple', 'technical-test'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, InlineAction $action) {
@@ -97,6 +98,36 @@ class SiteController extends Controller
         return $this->render('index', [
             'activeDataProvider' => $activeDataProvider,
         ]);
+    }
+
+
+
+    /**
+     * Technical test
+     * based on https://docs.google.com/document/d/1XgSKkfZ7aXSBOB3WrOF9PrK1irFd2FU3w7KqfyPm6PQ/edit
+     * see Example of the resulting script
+     *
+     * @return void
+     * @throws \common\exceptions\LogicException
+     */
+    public function actionTechnicalTest()
+    {
+        $apple = new Apple('green');
+
+        echo $apple->color; // green
+        try {
+            $apple->eat(50); // Бросить исключение - Съесть нельзя, яблоко на дереве
+        } catch (Exception $e) {
+            echo sprintf("\nException Detected: %s \n%s \nSkipping...\n",
+                $e->getMessage(),
+                $e->getTraceAsString()
+            );
+        }
+        echo $apple->size; // 1 - decimal
+
+        $apple->fallToGround(); // упасть на землю
+        $apple->eat(25); // откусить четверть яблока
+        echo $apple->size; // 0,75
     }
 
 

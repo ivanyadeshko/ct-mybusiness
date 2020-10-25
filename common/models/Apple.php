@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\exceptions\LogicException;
 use yii\base\InvalidValueException;
 use yii\behaviors\TimestampBehavior;
 
@@ -33,7 +34,7 @@ class Apple extends \yii\db\ActiveRecord
      * @TODO Для соответствия с ТЗ (создание модели с передачей строки в конструктор), пришлось переопределить логику конструктора.
      * Это топорная реализация.
      *
-     * @param array $config
+     * @param string|array $config
      */
     public function __construct($config = [])
     {
@@ -94,6 +95,8 @@ class Apple extends \yii\db\ActiveRecord
 
 
     /**
+     * Array of available colors
+     *
      * @return array
      */
     public static function getColors(): array
@@ -109,11 +112,12 @@ class Apple extends \yii\db\ActiveRecord
 
     /**
      * @return bool
+     * @throws LogicException
      */
     public function fallToGround(): bool
     {
         if (!$this->isOnTree()) {
-            throw new InvalidValueException("The apple is already on ground");
+            throw new LogicException("The apple is already on ground");
         }
         $this->fall_at = time();
         return true;
@@ -123,11 +127,12 @@ class Apple extends \yii\db\ActiveRecord
     /**
      * @param int $percent
      * @return bool
+     * @throws LogicException
      */
     public function eat(int $percent): bool
     {
         if (!$this->canEat()) {
-            throw new InvalidValueException("The apple is already on ground");
+            throw new LogicException("The apple is already on ground");
         }
         $this->size -= $percent/100;
         if ($this->size < 0) {
