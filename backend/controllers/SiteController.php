@@ -2,20 +2,14 @@
 
 namespace backend\controllers;
 
-use backend\models\EatAppleForm;
 use Yii;
-use yii\base\Exception;
 use yii\base\InlineAction;
-use yii\base\InvalidArgumentException;
-use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
 use common\models\User;
-use yii\data\ActiveDataProvider;
-use common\models\Apple;
 
 /**
  * Site controller
@@ -37,7 +31,7 @@ class SiteController extends Controller
                         'allow' => true,
                     ],
                     [
-                        'actions' => ['logout', 'index', 'grow-apples', 'fall-to-ground-apple', 'eat-apple', 'technical-test'],
+                        'actions' => ['logout', 'index'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, InlineAction $action) {
@@ -52,9 +46,6 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
-                    'grow-apples' => ['post'],
-                    'fall-to-ground-apple' => ['post'],
-                    'eat-apple' => ['post'],
                 ],
             ],
         ];
@@ -81,53 +72,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-
-        $activeDataProvider = new ActiveDataProvider([
-            'query' => Apple::find(),
-            'pagination' => [
-                'pageSize' => 25,
-            ],
-            'sort' => [
-                'defaultOrder' => [
-                    'created_at' => SORT_ASC
-                ]
-            ],
-        ]);
-
-
-        return $this->render('index', [
-            'activeDataProvider' => $activeDataProvider,
-        ]);
-    }
-
-
-
-    /**
-     * Technical test
-     * based on https://docs.google.com/document/d/1XgSKkfZ7aXSBOB3WrOF9PrK1irFd2FU3w7KqfyPm6PQ/edit
-     * see Example of the resulting script
-     *
-     * @return void
-     * @throws \common\exceptions\LogicException
-     */
-    public function actionTechnicalTest()
-    {
-        $apple = new Apple('green');
-
-        echo $apple->color; // green
-        try {
-            $apple->eat(50); // Бросить исключение - Съесть нельзя, яблоко на дереве
-        } catch (Exception $e) {
-            echo sprintf("\nException Detected: %s \n%s \nSkipping...\n",
-                $e->getMessage(),
-                $e->getTraceAsString()
-            );
-        }
-        echo $apple->size; // 1 - decimal
-
-        $apple->fallToGround(); // упасть на землю
-        $apple->eat(25); // откусить четверть яблока
-        echo $apple->size; // 0,75
+        return $this->redirect(Url::toRoute('apple/index'));
     }
 
 
@@ -157,96 +102,6 @@ class SiteController extends Controller
                 'model' => $model,
             ]);
         }
-    }
-
-
-    /**
-     * Generate random apples
-     *
-     * @return \yii\web\Response
-     */
-    public function actionGrowApples()
-    {
-        $total = rand(
-            Yii::$app->params['appleGenerator']['valueMin'],
-            Yii::$app->params['appleGenerator']['valueMax']
-        );
-        $limit = $generated = 0;
-        $errors = [];
-        while ($limit++ < $total) {
-
-            $model = new Apple(
-                Apple::getColors()[array_rand(Apple::getColors())]
-            );
-
-            if (!$model->save()) {
-                $errors[] = sprintf("#%d. %s", $limit, Html::errorSummary($model));
-            } else {
-                $generated += 1;
-            }
-
-        }
-
-        Yii::$app->session->setFlash(
-            ($generated === $total ? 'success' : 'warning'),
-            sprintf('Generated %d of %d apples', $generated, $total)
-        );
-
-        if ($errors) {
-            Yii::$app->session->setFlash('danger', sprintf("Errors: %s", implode(", ", $errors)));
-        }
-
-        return $this->redirect(Url::toRoute('site/index'));
-    }
-
-
-    /**
-     * Try to fall to ground apple
-     *
-     * @param int $id
-     * @return \yii\web\Response
-     */
-    public function actionFallToGroundApple(int $id)
-    {
-        $apple = Apple::findOne($id);
-        if (!$apple) {
-            throw new InvalidArgumentException(sprintf("Wrong apple ID: '%d'", $id));
-        }
-        if (!$apple->isOnTree()) {
-            Yii::$app->session->setFlash('danger', sprintf('Apple #%d already on the ground', $id));
-        } else {
-            $apple->fallToGround();
-            if ($apple->save()) {
-                Yii::$app->session->setFlash('success', sprintf('Apple #%d dropped.', $id));
-            } else {
-                Yii::$app->session->setFlash('danger', sprintf('Cant drop the apple #%d. Reason: %s', $id, Html::errorSummary($apple)));
-            }
-
-        }
-        return $this->redirect(Url::toRoute('site/index'));
-    }
-
-
-    /**
-     * @return \yii\web\Response
-     */
-    public function actionEatApple()
-    {
-        $model = new EatAppleForm();
-        if ($model->load(Yii::$app->request->post()) && $model->eat()) {
-            Yii::$app->session->setFlash('success',
-                sprintf('Apple #%d eaten by %d%%. Remaining: %d%%',
-                    $model->id,
-                    $model->size,
-                    $model->getApple()->size * 100
-                )
-            );
-        } else {
-            Yii::$app->session->setFlash('danger',
-                sprintf('Cant eat an apple #%d. Reason: %s', $model->id, Html::errorSummary($model))
-            );
-        }
-        return $this->redirect(Url::toRoute('site/index'));
     }
 
 

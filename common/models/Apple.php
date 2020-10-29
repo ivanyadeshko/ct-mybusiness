@@ -2,8 +2,6 @@
 
 namespace common\models;
 
-use common\exceptions\LogicException;
-use yii\base\InvalidValueException;
 use yii\behaviors\TimestampBehavior;
 
 /**
@@ -29,22 +27,6 @@ class Apple extends \yii\db\ActiveRecord
     const COLOR_RED = 'red';
     const COLOR_PINK = 'pink';
 
-
-    /**
-     * @TODO Для соответствия с ТЗ (создание модели с передачей строки в конструктор), пришлось переопределить логику конструктора.
-     * Это топорная реализация.
-     *
-     * @param string|array $config
-     */
-    public function __construct($config = [])
-    {
-        if (is_string($config)) {
-            $config = [
-                'color' => $config
-            ];
-        }
-        parent::__construct($config);
-    }
 
     public function behaviors()
     {
@@ -92,8 +74,6 @@ class Apple extends \yii\db\ActiveRecord
     }
 
 
-
-
     /**
      * Array of available colors
      *
@@ -107,38 +87,6 @@ class Apple extends \yii\db\ActiveRecord
             self::COLOR_YELLOW,
             self::COLOR_PINK,
         ];
-    }
-
-
-    /**
-     * @return bool
-     * @throws LogicException
-     */
-    public function fallToGround(): bool
-    {
-        if (!$this->isOnTree()) {
-            throw new LogicException("The apple is already on ground");
-        }
-        $this->fall_at = time();
-        return true;
-    }
-
-
-    /**
-     * @param int $percent
-     * @return bool
-     * @throws LogicException
-     */
-    public function eat(int $percent): bool
-    {
-        if (!$this->canEat()) {
-            throw new LogicException("The apple is already on ground");
-        }
-        $this->size -= $percent/100;
-        if ($this->size < 0) {
-            throw new InvalidValueException("Can't eat more then apple size");
-        }
-        return true;
     }
 
 
@@ -191,11 +139,14 @@ class Apple extends \yii\db\ActiveRecord
     /**
      * Checking if we cat eat the apple
      *
+     * @param int $percent
      * @return bool
      */
-    public function canEat(): bool
+    public function canEat(int $percent = null): bool
     {
-        return !$this->isOnTree() && $this->isFresh();
+        return !$this->isOnTree()
+            && $this->isFresh()
+            && ($percent !== null && $this->size - $percent / 100 >= 0);
     }
 
     /**

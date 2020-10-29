@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use common\models\Apple;
+use services\AppleService;
 use yii\base\Model;
 
 /**
@@ -83,9 +84,7 @@ class EatAppleForm extends Model
     public function eat(): bool
     {
         if ($this->validate()) {
-            $apple = $this->getApple();
-            $apple->eat($this->size);
-            return $apple->save();
+            return (new AppleService($this->getApple()))->eat($this->size);
         }
         return false;
     }

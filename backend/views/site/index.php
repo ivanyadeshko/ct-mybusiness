@@ -15,7 +15,7 @@ $this->title = 'My Yii Application';
 
         <div class="row">
             <div class="col-lg-4">
-                <?= Html::beginForm(['/site/grow-apples'], 'POST'); ?>
+                <?= Html::beginForm(['apple/grow-apples'], 'POST'); ?>
                 <?= Html::submitButton('Grow Apples', ['class' => 'btn btn-success', 'style' => 'margin: 1em;']); ?>
                 <?= Html::endForm(); ?>
             </div>
@@ -72,7 +72,7 @@ $this->title = 'My Yii Application';
                     'content' => function(Apple $model) {
                         return Html::a(
                             'Throw off',
-                            \yii\helpers\Url::toRoute(['site/fall-to-ground-apple', 'id' => $model->id]),
+                            \yii\helpers\Url::toRoute(['apple/fall-to-ground-apple', 'id' => $model->id]),
                             [
                                 'class' => "btn " . ($model->isOnTree() ? 'btn-success' : 'btn-secondary disabled'),
                                 'data' => [
